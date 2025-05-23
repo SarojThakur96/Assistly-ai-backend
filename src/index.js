@@ -16,4 +16,4 @@ connectDB()
       console.log(`App is running on Port ${process.env.PORT}`);
     });
   })
-  .catch((err) => console.log("mongodb connection failed!!", err));
+  .catch((err) => console.log("postgres connection failed!!", err));
