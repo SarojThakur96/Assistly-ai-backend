@@ -12,8 +12,10 @@ app.use(cookieParser());
 
 import userRouter from "./routes/user.routes.js";
 import chatbotRouter from "./routes/chatbot.routes.js";
+import chatbotCharacteristicsRouter from "./routes/chatbotCharacteristics.routes.js";
 
 app.use("/api/v1/users", userRouter);
 app.use("/api/v1/chatbot", chatbotRouter);
+app.use("/api/v1/chatbotCharacteristics", chatbotCharacteristicsRouter);
 
 export { app };
