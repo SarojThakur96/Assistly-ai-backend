@@ -96,3 +96,29 @@ export const deleteChatbotById = asyncHandler(async (req, res) => {
     .status(200)
     .json(new ApiResponse(200, result.rows[0], "Chatbot deleted successfully"));
 });
+
+//update chatbot name by id
+export const updateChatbotNameById = asyncHandler(async (req, res) => {
+  const { id, name } = req.body;
+
+  if (!id || !name) {
+    return res
+      .status(400)
+      .json(new ApiResponse(400, null, "Chatbot ID and name are required"));
+  }
+
+  const result = await pool.query(
+    `UPDATE chatbots SET name = $1 WHERE id = $2 RETURNING *`,
+    [name, id]
+  );
+
+  if (result.rows.length === 0) {
+    return res
+      .status(404)
+      .json(new ApiResponse(404, null, "Chatbot not found"));
+  }
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, result.rows[0], "Chatbot updated successfully"));
+});
