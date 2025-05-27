@@ -122,3 +122,79 @@ export const updateChatbotNameById = asyncHandler(async (req, res) => {
     .status(200)
     .json(new ApiResponse(200, result.rows[0], "Chatbot updated successfully"));
 });
+
+// get all chatbots for a user
+export const getAllChatbotsForUser = asyncHandler(async (req, res) => {
+  const { clerk_user_id } = req.query;
+
+  if (!clerk_user_id) {
+    return res
+      .status(400)
+      .json(new ApiResponse(400, null, "Clerk user ID is required"));
+  }
+
+  const query = `SELECT c.id, c.name,c.created_at,
+        coalesce(json_agg(json_build_object(
+        'id', cc.id,
+        'content', cc.content
+        ) ) FILTER (WHERE cc.id IS NOT NULL), '[]') AS chatbot_characteristics
+
+      FROM chatbots c LEFT JOIN chatbot_characteristics cc 
+      ON c.id = cc.chatbot_id 
+      WHERE c.clerk_user_id = $1 
+      GROUP BY c.id, c.name order by c.created_at DESC`;
+
+  const result = await pool.query(query, [clerk_user_id]);
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, result.rows, "Chatbots retrieved successfully"));
+});
+
+// get all chatbot by clerk_user_id, chatbot session count and guest info in json format
+
+export const getAllChatbotsWithSessionCount = asyncHandler(async (req, res) => {
+  const { clerk_user_id } = req.query;
+
+  if (!clerk_user_id) {
+    return res
+      .status(400)
+      .json(new ApiResponse(400, null, "Clerk user ID is required"));
+  }
+
+  const query = `
+    SELECT 
+      c.id, 
+      c.name, 
+      c.created_at,
+      COUNT(cs.id) AS session_count,
+      COALESCE(
+        json_agg(
+          DISTINCT jsonb_build_object(
+            'id', g.id,
+            'name', g.name,
+            'email', g.email,
+            'created_at', g.created_at
+          )
+        ) FILTER (WHERE g.id IS NOT NULL), '[]'
+      ) AS guests
+    FROM chatbots c
+    LEFT JOIN chat_sessions cs ON c.id = cs.chatbot_id
+    LEFT JOIN guests g ON cs.guest_id = g.id
+    WHERE c.clerk_user_id = $1
+    GROUP BY c.id, c.name, c.created_at
+    ORDER BY c.created_at DESC
+  `;
+
+  const result = await pool.query(query, [clerk_user_id]);
+
+  return res
+    .status(200)
+    .json(
+      new ApiResponse(
+        200,
+        result.rows,
+        "Chatbots with session count retrieved successfully"
+      )
+    );
+});
