@@ -5,6 +5,7 @@ import {
   addChatbot,
   deleteChatbotById,
   getAllChatbotsForUser,
+  getAllChatbotsWithMessages,
   getAllChatbotsWithSessionCount,
   updateChatbotNameById,
 } from "../controllers/chatbot.controller.js";
@@ -20,5 +21,6 @@ router
   .get(getAllChatbotsWithSessionCount);
 router.route("/deleteChatbotById").get(deleteChatbotById);
 router.route("/updateChatbotNameById").post(updateChatbotNameById);
+router.route("/getAllChatbotsWithMessages").get(getAllChatbotsWithMessages);
 
 export default router;

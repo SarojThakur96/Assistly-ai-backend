@@ -1,5 +1,3 @@
-import { DB_NAME_PROD } from "../constants.js";
-
 import pg from "pg";
 const { Pool } = pg;
 
@@ -9,7 +7,8 @@ const pool = new Pool({
 
 const connectDB = async () => {
   try {
-    await pool.connect();
+    const client = await pool.connect();
+    client.release();
     console.log("🟢 Connected to PostgreSQL database");
   } catch (error) {
     console.log("PostgreSQL connection error", error);

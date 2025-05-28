@@ -198,3 +198,51 @@ export const getAllChatbotsWithSessionCount = asyncHandler(async (req, res) => {
       )
     );
 });
+
+// get chatbot by id, guest info and messages info in json format
+
+export const getAllChatbotsWithMessages = asyncHandler(async (req, res) => {
+  const { guest_id } = req.query;
+
+  if (!guest_id) {
+    return res
+      .status(400)
+      .json(new ApiResponse(400, null, "Guest ID is required"));
+  }
+
+  const query = `
+    SELECT 
+      g.id, 
+      g.name, 
+      g.email,
+      c.name as chatbot_name,
+      g.created_at,
+       COALESCE(json_agg(
+         json_build_object(
+           'id', m.id,
+          'chat_session_id',m.chat_session_id,
+          'content',m.content,
+          'sender', m.sender,
+          'created_at',m.created_at
+         )
+       ) FILTER (WHERE m.id IS NOT NULL),'[]') AS messages
+    FROM guests g
+    LEFT JOIN chat_sessions cs ON cs.guest_id = g.id
+    LEFT JOIN messages m ON m.chat_session_id = cs.id
+    LEFT JOIN chatbots c ON cs.chatbot_id = c.id
+    WHERE g.id = $1
+    GROUP BY g.id, g.name,g.email, g.created_at,c.name
+  `;
+
+  const result = await pool.query(query, [guest_id]);
+
+  return res
+    .status(200)
+    .json(
+      new ApiResponse(
+        200,
+        result.rows[0],
+        "Chatbots with messages retrieved successfully"
+      )
+    );
+});
