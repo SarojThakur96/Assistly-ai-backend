@@ -4,7 +4,7 @@ services:
     env: node
     plan: free
     buildCommand: "npm install"
-    startCommand: "node -r dotenv/config --experimental-json-modules src/index.js"
+    startCommand: "node -r dotenv/config --experimental-json-modules index.js"
     envVars:
       - key: NODE_ENV
         value: production
