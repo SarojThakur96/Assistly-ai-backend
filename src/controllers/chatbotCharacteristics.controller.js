@@ -1,4 +1,4 @@
-import { pool } from "../db/index.js";
+import { pool } from "../../index.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 
