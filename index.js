@@ -1,19 +1,19 @@
-import pg from "pg";
-const { Pool } = pg;
+import dotenv from "dotenv";
+import { connectDB } from "./src/db/index.js";
+import { app } from "./src/app.js";
 
-const pool = new Pool({
-  connectionString: process.env.DB_CONNECTION_STRING,
+dotenv.config({
+  path: "./env",
 });
 
-const connectDB = async () => {
-  try {
-    const client = await pool.connect();
-    client.release();
-    console.log("🟢 Connected to PostgreSQL database");
-  } catch (error) {
-    console.log("PostgreSQL connection error", error);
-    process.exit(1);
-  }
-};
-
-export { pool, connectDB };
+connectDB()
+  .then(() => {
+    app.on("error", (error) => {
+      console.log("Err:", error);
+      throw error;
+    });
+    app.listen(process.env.PORT || 8000, () => {
+      console.log(`App is running on Port ${process.env.PORT}`);
+    });
+  })
+  .catch((err) => console.log("postgres connection failed!!", err));
