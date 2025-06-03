@@ -3,7 +3,7 @@ import {
   addChatbotCharacteristic,
   deleteChatbotCharacteristicById,
   getChatbotCharacteristicsById,
-} from "../controllers/ChatbotCharacteristics.controller.js";
+} from "../controllers/chatbotCharacter.controller.js";
 
 const router = Router();
 
