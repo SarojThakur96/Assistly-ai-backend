@@ -12,12 +12,12 @@ app.use(cookieParser());
 
 import userRouter from "./routes/user.routes.js";
 import chatbotRouter from "./routes/chatbot.routes.js";
-import chatbotCharacteristicsRouter from "./routes/chatbotCharacteristics.routes.js";
+// import chatbotCharacteristicsRouter from "./routes/chatbotCharacteristics.routes.js";
 import chatMessagesRouter from "./routes/chatMessages.routes.js";
 
 app.use("/api/v1/users", userRouter);
 app.use("/api/v1/chatbot", chatbotRouter);
-app.use("/api/v1/chatbotCharacteristics", chatbotCharacteristicsRouter);
+// app.use("/api/v1/chatbotCharacteristics", chatbotCharacteristicsRouter);
 app.use("/api/v1/chatMessages", chatMessagesRouter);
 
 export { app };
