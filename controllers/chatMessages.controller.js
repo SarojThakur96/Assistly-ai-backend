@@ -184,7 +184,6 @@ export const openAiChatCompletion = asyncHandler(async (req, res) => {
     const openaiResponse = await openai.chat.completions.create({
       messages: messages,
       model: "gpt-3.5-turbo",
-      max_completion_tokens: 100,
     });
 
     const aiResponse = openaiResponse?.choices?.[0]?.message?.content?.trim();
