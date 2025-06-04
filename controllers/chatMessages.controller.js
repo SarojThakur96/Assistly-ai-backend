@@ -20,21 +20,12 @@ export const startNewChat = asyncHandler(async (req, res) => {
 
   const client = await pool.connect();
   try {
-    // Check if guest exists
-    let guestId;
-    const guestRes = await client.query(
-      "SELECT id FROM guests WHERE email = $1",
-      [email]
+    // Always insert guest, allow duplicates
+    const insertGuest = await client.query(
+      "INSERT INTO guests (name, email) VALUES ($1, $2) RETURNING id",
+      [name, email]
     );
-    if (guestRes.rows.length > 0) {
-      guestId = guestRes.rows[0].id;
-    } else {
-      const insertGuest = await client.query(
-        "INSERT INTO guests (name, email) VALUES ($1, $2) RETURNING id",
-        [name, email]
-      );
-      guestId = insertGuest.rows[0].id;
-    }
+    const guestId = insertGuest.rows[0].id;
 
     // Create chat session
     const chatSessionRes = await client.query(
@@ -197,7 +188,7 @@ export const openAiChatCompletion = asyncHandler(async (req, res) => {
     // step 4: save the user's message in the database with chat_session_id,content and sender("user")
 
     await client.query(
-      "INSERT INTO messages (chat_session_id,sender,content) VALUES ($1,$2,$3)",
+      "INSERT INTO messages (chat_session_id,sender,content) VALUES ($1,$2,$3) RETURNING *",
       [chat_session_id, "user", content]
     );
 
@@ -209,6 +200,8 @@ export const openAiChatCompletion = asyncHandler(async (req, res) => {
     );
 
     // step 6: return the AI's response to the client
+
+    await client.query("COMMIT");
 
     return res.status(200).json({
       id: aiMessageResult[0].id,
