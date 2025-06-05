@@ -153,13 +153,16 @@ export const openAiChatCompletion = asyncHandler(async (req, res) => {
       .map((c) => c.content)
       .join(" + ");
 
+    // If a generic question is asked which is not
+    // relevant or in the same scope or domain as the points mentioned in the key information section, kindly
+    // inform the user they're only allowed to search for the specified content.
+
     const messages = [
       {
         role: "system",
         name: "system",
-        content: `You are a helpful assistant talking to ${name}. If a generic question is asked which is not
-            relevant or in the same scope or domain as the points mentioned in the key information section, kindly
-            inform the user they're only allowed to search for the specified content. Use Emoji's where possible. Here
+        content: `You are a helpful assistant talking to ${name}.
+             Use Emoji's where possible. Here
             is some key information that you need to be aware of, these are elements you may be asked about: ${systemPrompt}`,
       },
       ...formattedPreviousMessages,
