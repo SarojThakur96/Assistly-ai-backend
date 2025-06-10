@@ -2,6 +2,7 @@ import { pool } from "../db/index.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import OpenAI from "openai";
+import axios from "axios";
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
@@ -220,3 +221,126 @@ export const openAiChatCompletion = asyncHandler(async (req, res) => {
     client.release();
   }
 });
+
+// export const openAiChatCompletion = asyncHandler(async (req, res) => {
+//   const { chat_session_id, chatbot_id, content, name } = req.body;
+
+//   if (!chat_session_id || !chatbot_id || !content || !name) {
+//     return res
+//       .status(400)
+//       .json(
+//         new ApiResponse(
+//           400,
+//           null,
+//           "Bad Request please provide all mandatory fields"
+//         )
+//       );
+//   }
+
+//   const client = await pool.connect();
+
+//   try {
+//     await client.query("BEGIN");
+
+//     // Step 1: Fetch chatbot characteristics
+//     const { rows: chatbot_characteristics } = await client.query(
+//       "SELECT * FROM chatbot_characteristics WHERE chatbot_id = $1",
+//       [chatbot_id]
+//     );
+
+//     if (chatbot_characteristics.length === 0) {
+//       return res
+//         .status(404)
+//         .json(
+//           new ApiResponse(
+//             404,
+//             null,
+//             "Chatbot characteristics not found with this chatbot_id"
+//           )
+//         );
+//     }
+
+//     // Step 2: Fetch previous messages
+//     const { rows: chat_messages } = await client.query(
+//       "SELECT * FROM messages WHERE chat_session_id = $1",
+//       [chat_session_id]
+//     );
+
+//     if (chat_messages.length === 0) {
+//       return res
+//         .status(404)
+//         .json(
+//           new ApiResponse(
+//             404,
+//             null,
+//             "Chatbot messages not found with this chat_session_id"
+//           )
+//         );
+//     }
+
+//     const formattedPreviousMessages = chat_messages.map((message) => ({
+//       role: message.sender === "ai" ? "assistant" : "user",
+//       content: message.content,
+//     }));
+
+//     // Step 3: Build system prompt
+//     const systemPrompt = chatbot_characteristics
+//       .map((c) => c.content)
+//       .join(" + ");
+
+//     const messages = [
+//       {
+//         role: "system",
+//         content: `You are a helpful assistant talking to ${name}.
+//           Use emoji's where possible. Here is some key information that you need to be aware of, these are elements you may be asked about: ${systemPrompt}`,
+//       },
+//       ...formattedPreviousMessages,
+//       {
+//         role: "user",
+//         content: content,
+//       },
+//     ];
+
+//     // Step 4: Send to Ollama
+//     const ollamaResponse = await axios.post("http://localhost:11434/api/chat", {
+//       model: "llama3.2",
+//       messages: messages,
+//       stream: false,
+//     });
+
+//     const aiResponse = ollamaResponse?.data?.message?.content?.trim();
+
+//     if (!aiResponse) {
+//       return res
+//         .status(500)
+//         .json(new ApiResponse(500, null, "Failed to generate AI response"));
+//     }
+
+//     // Step 5: Save user message
+//     await client.query(
+//       "INSERT INTO messages (chat_session_id, sender, content) VALUES ($1, $2, $3)",
+//       [chat_session_id, "user", content]
+//     );
+
+//     // Step 6: Save AI message
+//     const { rows: aiMessageResult } = await client.query(
+//       "INSERT INTO messages (chat_session_id, sender, content) VALUES ($1, $2, $3) RETURNING *",
+//       [chat_session_id, "ai", aiResponse]
+//     );
+
+//     await client.query("COMMIT");
+
+//     return res.status(200).json({
+//       id: aiMessageResult[0].id,
+//       content: aiResponse,
+//     });
+//   } catch (error) {
+//     console.error("Ollama Chat Error:", error.message);
+//     await client.query("ROLLBACK");
+//     return res
+//       .status(500)
+//       .json(new ApiResponse(500, error, "Failed to connect with AI."));
+//   } finally {
+//     client.release();
+//   }
+// });
