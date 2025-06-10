@@ -112,17 +112,17 @@ export const openAiChatCompletion = asyncHandler(async (req, res) => {
       [chatbot_id]
     );
 
-    if (chatbot_characteristics.length === 0) {
-      return res
-        .status(404)
-        .json(
-          new ApiResponse(
-            404,
-            null,
-            "chatbot characteristics not found with this chatbot_id"
-          )
-        );
-    }
+    // if (chatbot_characteristics.length === 0) {
+    //   return res
+    //     .status(404)
+    //     .json(
+    //       new ApiResponse(
+    //         404,
+    //         null,
+    //         "chatbot characteristics not found with this chatbot_id"
+    //       )
+    //     );
+    // }
 
     // step 2 : fetch previous messages by chat_session_id
 
